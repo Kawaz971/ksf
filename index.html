@@ -1,4 +1,379 @@
-<!DOCTYPE html><html lang="fr"><meta charset="utf-8">
-<meta http-equiv="refresh" content="0; url=snake.html">
-<title>Redirection…</title>
-<p>Redirection vers <a href="snake.html">snake.html</a></p>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>KSF Snake – Jouer</title>
+  <meta name="description" content="Mini-jeu Snake pour patienter dans la file – KSF / Sowbella" />
+  <style>
+    :root{
+      --ksf-yellow:#FFD400;
+      --ksf-black:#111111;
+      --ksf-white:#ffffff;
+      --ksf-accent:#0fb; /* accent tropical mint */
+      --radius:18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background: radial-gradient(1200px 600px at 10% 10%, #fff9d6 0%, #fff3a6 30%, #fff 60%), var(--ksf-white);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      color:var(--ksf-black);
+      display:flex; align-items:center; justify-content:center;
+      padding:16px;
+    }
+
+    .app{width:min(520px, 100%);}
+    .card{
+      background:var(--ksf-white);
+      border:2px solid var(--ksf-black);
+      border-radius:var(--radius);
+      box-shadow: 0 8px 0 var(--ksf-black);
+      overflow:hidden;
+    }
+    .header{
+      display:flex; align-items:center; gap:12px;
+      background:var(--ksf-yellow);
+      border-bottom:2px solid var(--ksf-black);
+      padding:12px 14px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.5px;
+    }
+    .brand img{width:38px;height:38px;border-radius:12px;border:2px solid var(--ksf-black);background:#fff;object-fit:cover}
+    .brand .title{font-size:20px}
+    .badges{margin-left:auto;display:flex;gap:8px;align-items:center}
+    .badge{font-size:12px;padding:6px 10px;border:2px solid var(--ksf-black);border-radius:999px;background:#fff}
+
+    .canvas-wrap{position:relative; aspect-ratio:4/5; background:#fef9d8; display:grid; place-items:center}
+    canvas{width:100%;height:100%;image-rendering:pixelated; background:#fffdf0; border-bottom:2px solid var(--ksf-black)}
+
+    .hud{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 12px; border-top:2px dashed var(--ksf-black); background:#fff}
+    .hud .scores{display:flex; gap:10px;}
+    .score-chip{border:2px solid var(--ksf-black); padding:6px 10px; border-radius:999px; font-weight:700; background:#fff}
+    .actions{display:flex; gap:8px;}
+    button{
+      cursor:pointer; font-weight:800; border:2px solid var(--ksf-black); border-radius:12px; padding:10px 12px; background:#fff; transition:transform .04s ease;
+    }
+    button:active{transform:translateY(1px)}
+    .primary{background:var(--ksf-yellow)}
+    .ghost{background:#fff}
+    .mint{background:var(--ksf-accent)}
+
+    /* Mobile controls */
+    .controls{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:12px; background:#fff; border-top:2px dashed var(--ksf-black)}
+    .controls button{height:48px; font-size:18px}
+    .controls .blank{visibility:hidden}
+
+    /* Overlay */
+    .overlay{position:absolute; inset:0; display:none; place-items:center; background:rgba(255,255,255,.88);}
+    .overlay.active{display:grid}
+    .panel{width:min(92%, 420px); background:#fff; border:2px solid var(--ksf-black); border-radius:16px; box-shadow:0 8px 0 var(--ksf-black); padding:16px}
+    .panel h2{margin:.2rem 0 0.6rem}
+    .panel p{margin:.5rem 0; line-height:1.35}
+    .list{padding-left:18px}
+    .center{display:flex; justify-content:center}
+    .small{font-size:12px; opacity:.75}
+    .muted{opacity:.8}
+
+    .footer{padding:10px 12px; font-size:12px; background:#fff; border-top:2px dashed var(--ksf-black); display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap}
+    .link{color:inherit}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card">
+      <div class="header">
+        <div class="brand">
+          <!-- ⚠️ Remplacez data-logo-url par l'URL de votre logo (PNG) si vous en avez un -->
+          <img id="logo" alt="Logo" />
+          <div class="title" id="brandTitle">KSF – Mini Snake</div>
+        </div>
+        <div class="badges">
+          <div class="badge">🎁 Score du jour = surprise</div>
+        </div>
+      </div>
+
+      <div class="canvas-wrap">
+        <canvas id="game" width="400" height="500"></canvas>
+        <div class="overlay active" id="startOverlay">
+          <div class="panel">
+            <h2>🎮 Jouer à Snake</h2>
+            <p class="muted">Fais le meilleur score pendant l'attente. Montre ta capture à la caisse pour tenter de gagner un <strong>cadeau</strong> 🎁</p>
+            <ul class="list">
+              <li>Clavier: flèches ou Z/Q/S/D</li>
+              <li>Mobile: utilisez les flèches à l'écran</li>
+              <li>Pause / Reprendre: barre espace ou bouton ⏸️</li>
+            </ul>
+            <div class="center" style="gap:8px; margin-top:10px">
+              <button class="primary" id="btnStart">▶️ Jouer</button>
+              <button class="ghost" id="btnHow">ℹ️ Règles</button>
+            </div>
+          </div>
+        </div>
+        <div class="overlay" id="rulesOverlay">
+          <div class="panel">
+            <h2>ℹ️ Règles</h2>
+            <p>Mange les fruits, évite les murs et ta propre queue. Chaque fruit = +1 point, la vitesse augmente régulièrement.</p>
+            <p class="small">Astuce: enchaîne sans t'arrêter pour marquer vite, mais anticipe tes virages 😉</p>
+            <div class="center" style="margin-top:10px">
+              <button class="primary" id="btnBack">Ok, j'ai compris</button>
+            </div>
+          </div>
+        </div>
+        <div class="overlay" id="gameOverOverlay">
+          <div class="panel" id="gameOverPanel">
+            <h2>💥 Perdu !</h2>
+            <p id="finalScore">Score: 0</p>
+            <p id="bestScore">Meilleur: 0</p>
+            <div class="center" style="gap:8px; margin-top:10px">
+              <button class="primary" id="btnRestart">↻ Rejouer</button>
+              <button class="mint" id="btnShare">Partager</button>
+            </div>
+            <p class="small muted" style="margin-top:10px">Astuce: ajoute le jeu à ton écran d'accueil pour y rejouer plus tard 📲</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud">
+        <div class="scores">
+          <div class="score-chip">Score: <span id="score">0</span></div>
+          <div class="score-chip">Best: <span id="hi">0</span></div>
+        </div>
+        <div class="actions">
+          <button id="btnPause">⏸️ Pause</button>
+          <a id="backLink" class="link" href="#" target="_self"><button class="ghost">⬅️ Linktree</button></a>
+        </div>
+      </div>
+
+      <div class="controls" id="controls">
+        <button data-dir="up">⬆️</button>
+        <button class="blank"></button>
+        <button data-dir="right">➡️</button>
+        <button data-dir="left">⬅️</button>
+        <button data-dir="down">⬇️</button>
+        <button id="btnTapPause">⏸️</button>
+      </div>
+
+      <div class="footer">
+        <div>Insta: <strong>@Sowbella_France</strong> • <strong>@KSF_streetfood</strong></div>
+        <div class="muted">Personnalisé pour l'attente en file • HTML5 offline-ready</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Config facile =====
+    const CONFIG = {
+      brandTitle: 'KSF – Mini Snake',
+      logoUrl: '', // ex: 'https://.../logo.png' (laisser vide pour logo texte)
+      linktreeBackUrl: 'https://linktr.ee/ksf_fr',
+      grid: 20, // 20x20 cellules
+      speedStartMs: 140, // vitesse initiale
+      speedMinMs: 70, // vitesse minimale atteignable
+      speedStepScore: 4, // tous les X points, on accélère
+      hiStorageKey: 'ksfSnakeHighScore',
+      theme: {
+        snake: '#111111',
+        head: '#000000',
+        fruit: '#ff3b3b',
+        board: '#fffdf0',
+        gridLine: '#f3e9a2'
+      }
+    };
+
+    // UI init
+    const brandTitle = document.getElementById('brandTitle');
+    const logo = document.getElementById('logo');
+    const backLink = document.getElementById('backLink');
+    brandTitle.textContent = CONFIG.brandTitle;
+    backLink.href = CONFIG.linktreeBackUrl;
+    if(CONFIG.logoUrl){
+      logo.src = CONFIG.logoUrl;
+      logo.style.display = 'block';
+    } else {
+      // Fallback: carré couleur avec initiales
+      const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23FFD400' stroke='%23111' stroke-width='4'/><text x='50%' y='56%' text-anchor='middle' font-weight='900' font-size='28' fill='%23111' font-family='Arial, Helvetica, sans-serif'>KSF</text></svg>`);
+      logo.src = `data:image/svg+xml;charset=utf-8,${svg}`;
+      logo.style.display = 'block';
+    }
+
+    // Canvas & game state
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const cell = Math.floor(Math.min(canvas.width, canvas.height) / CONFIG.grid);
+    const world = { size: CONFIG.grid };
+
+    let snake, dir, nextDir, fruit, score, best, timer, speed;
+
+    const startOverlay = document.getElementById('startOverlay');
+    const rulesOverlay = document.getElementById('rulesOverlay');
+    const gameOverOverlay = document.getElementById('gameOverOverlay');
+    const scoreEl = document.getElementById('score');
+    const hiEl = document.getElementById('hi');
+
+    const btnStart = document.getElementById('btnStart');
+    const btnHow = document.getElementById('btnHow');
+    const btnBack = document.getElementById('btnBack');
+    const btnRestart = document.getElementById('btnRestart');
+    const btnShare = document.getElementById('btnShare');
+    const btnPause = document.getElementById('btnPause');
+    const btnTapPause = document.getElementById('btnTapPause');
+
+    function loadBest(){
+      const v = parseInt(localStorage.getItem(CONFIG.hiStorageKey)||'0',10);
+      best = isNaN(v)?0:v;
+      hiEl.textContent = best;
+    }
+
+    function saveBest(){
+      localStorage.setItem(CONFIG.hiStorageKey, String(best));
+    }
+
+    function reset(){
+      snake = [ {x:10,y:10}, {x:9,y:10}, {x:8,y:10} ];
+      dir = {x:1,y:0};
+      nextDir = {x:1,y:0};
+      score = 0; scoreEl.textContent = score;
+      speed = CONFIG.speedStartMs;
+      spawnFruit();
+      draw();
+    }
+
+    function spawnFruit(){
+      do{
+        fruit = { x: Math.floor(Math.random()*world.size), y: Math.floor(Math.random()*world.size) };
+      } while(snake.some(s=>s.x===fruit.x && s.y===fruit.y));
+    }
+
+    function drawCell(x,y,color){
+      ctx.fillStyle = color;
+      ctx.fillRect(x*cell, y*cell, cell, cell);
+    }
+
+    function drawGrid(){
+      ctx.strokeStyle = CONFIG.theme.gridLine;
+      ctx.lineWidth = 1;
+      for(let i=0;i<=world.size;i++){
+        ctx.beginPath(); ctx.moveTo(i*cell,0); ctx.lineTo(i*cell, world.size*cell); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(0,i*cell); ctx.lineTo(world.size*cell, i*cell); ctx.stroke();
+      }
+    }
+
+    function draw(){
+      // board
+      ctx.fillStyle = CONFIG.theme.board;
+      ctx.fillRect(0,0,canvas.width, canvas.height);
+      drawGrid();
+      // fruit
+      drawCell(fruit.x, fruit.y, CONFIG.theme.fruit);
+      // snake
+      snake.forEach((s,i)=>{
+        drawCell(s.x,s.y, i===0?CONFIG.theme.head:CONFIG.theme.snake);
+      });
+    }
+
+    function tick(){
+      // apply nextDir if not reversing
+      if((nextDir.x !== -dir.x) || (nextDir.y !== -dir.y)){
+        dir = nextDir;
+      }
+      const head = { x: snake[0].x + dir.x, y: snake[0].y + dir.y };
+      // wall or self collision
+      if(head.x<0 || head.y<0 || head.x>=world.size || head.y>=world.size || snake.some(s=>s.x===head.x && s.y===head.y)){
+        return gameOver();
+      }
+      snake.unshift(head);
+      if(head.x===fruit.x && head.y===fruit.y){
+        score++; scoreEl.textContent = score;
+        if(score>best){ best = score; hiEl.textContent = best; saveBest(); }
+        if(score % CONFIG.speedStepScore === 0){
+          speed = Math.max(CONFIG.speedMinMs, speed-10);
+          clearInterval(timer); timer = setInterval(tick, speed);
+        }
+        spawnFruit();
+      } else {
+        snake.pop();
+      }
+      draw();
+    }
+
+    function play(){
+      clearInterval(timer);
+      timer = setInterval(tick, speed);
+    }
+
+    function pause(){
+      clearInterval(timer); timer=null;
+    }
+
+    function togglePause(){
+      if(timer){ pause(); } else { play(); }
+      document.getElementById('btnPause').textContent = timer? '⏸️ Pause' : '▶️ Reprendre';
+      document.getElementById('btnTapPause').textContent = timer? '⏸️' : '▶️';
+    }
+
+    function gameOver(){
+      pause();
+      document.getElementById('finalScore').textContent = 'Score: '+score;
+      document.getElementById('bestScore').textContent = 'Meilleur: '+best;
+      gameOverOverlay.classList.add('active');
+    }
+
+    // input
+    const keyMap = {
+      ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0},
+      KeyW:{x:0,y:-1}, KeyS:{x:0,y:1}, KeyA:{x:-1,y:0}, KeyD:{x:1,y:0}
+    };
+    window.addEventListener('keydown', (e)=>{
+      if(e.code==='Space'){ e.preventDefault(); togglePause(); return; }
+      const nd = keyMap[e.code];
+      if(nd){ e.preventDefault(); nextDir = nd; }
+    });
+
+    document.querySelectorAll('[data-dir]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ nextDir = { ...({up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}})[btn.dataset.dir] }; });
+    });
+
+    // Buttons
+    btnStart.addEventListener('click', ()=>{
+      startOverlay.classList.remove('active');
+      reset(); play();
+    });
+    btnHow.addEventListener('click', ()=>{
+      startOverlay.classList.remove('active'); rulesOverlay.classList.add('active');
+    });
+    btnBack.addEventListener('click', ()=>{
+      rulesOverlay.classList.remove('active'); startOverlay.classList.add('active');
+    });
+    btnRestart.addEventListener('click', ()=>{
+      gameOverOverlay.classList.remove('active'); reset(); play();
+    });
+    btnShare.addEventListener('click', async ()=>{
+      const text = `J'ai fait ${score} points au Snake KSF ! @Sowbella_France @KSF_streetfood`;
+      try{
+        if(navigator.share){ await navigator.share({text, title:'KSF Snake', url: location.href}); }
+        else {
+          await navigator.clipboard.writeText(text);
+          alert('Score copié ! Colle-le dans ta story Insta 📲');
+        }
+      }catch(err){ console.log(err); }
+    });
+    btnPause.addEventListener('click', togglePause);
+    btnTapPause.addEventListener('click', togglePause);
+
+    // Init
+    loadBest();
+    // Resize canvas to keep perfect grid (optional)
+    function resizeCanvas(){
+      const w = document.querySelector('.canvas-wrap').clientWidth;
+      const h = w*5/4; // 4:5 ratio
+      canvas.width = Math.round(w);
+      canvas.height = Math.round(h);
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+  </script>
+</body>
+</html>

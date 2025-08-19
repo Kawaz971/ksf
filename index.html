@@ -62,7 +62,7 @@
     .mint{background:var(--ksf-accent)}
 
     /* Mobile controls */
-    .controls{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; padding:12px; background:#fff; border-top:2px dashed var(--ksf-black)}
+    .controls{display:none} /* commandes écran masquées : gestes tactiles à la place */
     .controls button{height:48px; font-size:18px}
     .controls .blank{visibility:hidden}
 
@@ -103,7 +103,7 @@
             <p class="muted">Fais le meilleur score pendant l'attente. Montre ta capture à la caisse pour tenter de gagner un <strong>cadeau</strong> 🎁</p>
             <ul class="list">
               <li>Clavier: flèches ou Z/Q/S/D</li>
-              <li>Mobile: utilisez les flèches à l'écran</li>
+              <li>Mobile: balayez l'écran (haut/bas/gauche/droite) • tapez pour pause</li>
               <li>Pause / Reprendre: barre espace ou bouton ⏸️</li>
             </ul>
             <div class="center" style="gap:8px; margin-top:10px">
@@ -321,16 +321,49 @@
       gameOverOverlay.classList.add('active');
     }
 
-    // input
-    const keyMap = {
-      ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0},
-      KeyW:{x:0,y:-1}, KeyS:{x:0,y:1}, KeyA:{x:-1,y:0}, KeyD:{x:1,y:0}
-    };
-    window.addEventListener('keydown', (e)=>{
-      if(e.code==='Space'){ e.preventDefault(); togglePause(); return; }
-      const nd = keyMap[e.code];
-      if(nd){ e.preventDefault(); nextDir = nd; }
-    });
+    // input – clavier (desktop)
+const keyMap = {
+  ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0},
+  KeyW:{x:0,y:-1}, KeyS:{x:0,y:1}, KeyA:{x:-1,y:0}, KeyD:{x:1,y:0}
+};
+window.addEventListener('keydown', (e)=>{
+  if(e.code==='Space'){ e.preventDefault(); togglePause(); return; }
+  const nd = keyMap[e.code];
+  if(nd){ e.preventDefault(); nextDir = nd; }
+});
+
+// ===== Gestes tactiles / pointer (mobile iOS/Android) =====
+let touchStart = null;
+const SWIPE_THRESHOLD = 18; // px (faible pour réactivité en file)
+function handleSwipe(dx, dy){
+  if(Math.abs(dx) < SWIPE_THRESHOLD && Math.abs(dy) < SWIPE_THRESHOLD){
+    // Tape léger = pause / reprendre
+    togglePause();
+    return;
+  }
+  if(Math.abs(dx) > Math.abs(dy)){
+    nextDir = dx>0 ? {x:1,y:0} : {x:-1,y:0};
+  } else {
+    nextDir = dy>0 ? {x:0,y:1} : {x:0,y:-1};
+  }
+}
+function onPointerDown(ev){
+  const t = ev.touches ? ev.touches[0] : ev;
+  touchStart = {x:t.clientX, y:t.clientY};
+}
+function onPointerUp(ev){
+  if(!touchStart) return;
+  const t = ev.changedTouches ? ev.changedTouches[0] : ev;
+  const dx = t.clientX - touchStart.x;
+  const dy = t.clientY - touchStart.y;
+  touchStart = null;
+  handleSwipe(dx, dy);
+}
+// Support pointer events + fallback touch
+canvas.addEventListener('pointerdown', onPointerDown, {passive:true});
+canvas.addEventListener('pointerup', onPointerUp, {passive:true});
+canvas.addEventListener('touchstart', onPointerDown, {passive:true});
+canvas.addEventListener('touchend', onPointerUp, {passive:true});
 
     document.querySelectorAll('[data-dir]').forEach(btn=>{
       btn.addEventListener('click', ()=>{ nextDir = { ...({up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}})[btn.dataset.dir] }; });

@@ -54,9 +54,6 @@
     .center{display:flex; justify-content:center; gap:8px; flex-wrap:wrap}
     .small{font-size:12px; opacity:.75}
 
-    .row{display:flex; gap:8px; align-items:center; margin-top:8px}
-    .input{flex:1; border:2px solid var(--ksf-black); border-radius:10px; padding:10px 12px; font-weight:700}
-
     .lb-table{width:100%; border-collapse:collapse; margin-top:8px}
     .lb-table th,.lb-table td{border:1px solid #ccc; padding:6px 8px; text-align:left; font-size:14px}
     .lb-table th{background:#fff9cc}
@@ -93,11 +90,6 @@
               <li>Avoir tagué <strong>@karibeanstreetfood</strong> en story</li>
               <li>Montrer la <strong>capture d'écran</strong> du score à la caisse</li>
             </ul>
-            <div class="row">
-              <input id="igInput" class="input" placeholder="Ton pseudo Instagram (sans @)" maxlength="32"/>
-              <button id="saveIg" class="mint">✅ Valider</button>
-            </div>
-            <p class="small" id="igSavedMsg" style="display:none">Profil enregistré : <strong id="igSavedValue"></strong>. Il sera associé à tes scores.</p>
             <p class="small">Fin du jeu concours à <strong>20:00</strong> (heure locale). Les scores après 20:00 ne comptent pas.</p>
             <div class="center" style="margin-top:10px">
               <button class="primary" id="btnStart">▶️ Jouer</button>
@@ -138,9 +130,9 @@
 
         <div class="overlay" id="leaderboardOverlay">
           <div class="panel">
-            <h2>🏆 Classement (local/cloud)</h2>
+            <h2>🏆 Classement</h2>
             <table class="lb-table" id="lbTable">
-              <thead><tr><th>#</th><th>Instagram</th><th>Score</th><th>Heure</th></tr></thead>
+              <thead><tr><th>#</th><th>Score</th><th>Heure</th></tr></thead>
               <tbody></tbody>
             </table>
             <div class="center" style="margin-top:10px">
@@ -148,7 +140,6 @@
               <button class="primary" id="btnExportCsv">⬇️ Export CSV</button>
               <button class="mint" id="btnClearLocal">🗑️ Vider (local)</button>
             </div>
-            <p class="small">Les données peuvent être centralisées si tu ajoutes un endpoint Google Apps Script (voir CONFIG.scoresEndpoint).</p>
           </div>
         </div>
       </div>
@@ -157,7 +148,6 @@
         <div class="scores">
           <div class="chip">Score: <span id="score">0</span></div>
           <div class="chip">Best: <span id="hi">0</span></div>
-          <div class="chip" id="whoChip" title="Profil Instagram saisi">👤 IG: <span id="whoName">—</span></div>
         </div>
         <div class="actions">
           <button id="btnPause">⏯️ Pause</button>
@@ -192,8 +182,7 @@
       hiStorageKey: 'ksfSnakeHighScore',
       contestEndHour: 20,
       storageKeySubmissions: 'ksfSnakeSubmissions',
-      storageKeyPlayer: 'ksfSnakePlayer',
-      scoresEndpoint: '', // ex. 'https://script.google.com/macros/s/AKfycbx.../exec'
+      scoresEndpoint: '', // mettre un Google Apps Script si tu veux mutualiser
       theme: { snake:'#111', head:'#000', fruit:'#ff3b3b', board:'#fffdf0', grid:'#f3e9a2' }
     };
 
@@ -201,31 +190,6 @@
     let contestEnded=false; const countdownEl=document.getElementById('countdown'); const liveDot=document.getElementById('liveDot');
     function updateCountdown(){ const now=new Date(); const end=getTodayEnd(); if(now>=end){contestEnded=true; countdownEl.textContent='Terminé'; document.getElementById('contestText').textContent='Concours terminé – rendez-vous demain !'; liveDot.style.background='#888'; document.getElementById('contestNote').textContent='Concours terminé. Tu peux continuer à jouer pour le fun !'; return;} const diff=end-now; const h=String(Math.floor(diff/3_600_000)).padStart(2,'0'); const m=String(Math.floor((diff%3_600_000)/60_000)).padStart(2,'0'); const s=String(Math.floor((diff%60_000)/1_000)).padStart(2,'0'); countdownEl.textContent=`${h}:${m}:${s}`; }
     setInterval(updateCountdown,1000); updateCountdown();
-
-    document.getElementById('brandTitle').textContent=CONFIG.brandTitle; const logo=document.getElementById('logo'); if(CONFIG.logoUrl){logo.src=CONFIG.logoUrl;logo.style.display='block';} else { const svg=encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23FFD400' stroke='%23111' stroke-width='4'/><text x='50%' y='56%' text-anchor='middle' font-weight='900' font-size='28' fill='%23111' font-family='Arial, Helvetica, sans-serif'>KSF</text></svg>`); logo.src=`data:image/svg+xml;charset=utf-8,${svg}`; logo.style.display='block'; }
-
-    document.addEventListener('touchmove', (e)=>{ if(e.touches.length===1){ e.preventDefault(); } }, {passive:false});
-
-    const whoChip=document.getElementById('whoChip'); const whoName=document.getElementById('whoName');
-    const igInput=document.getElementById('igInput'); const saveIgBtn=document.getElementById('saveIg'); const igSavedMsg=document.getElementById('igSavedMsg'); const igSavedValue=document.getElementById('igSavedValue');
-    function loadPlayer(){ const p=(localStorage.getItem('ksfSnakePlayer')||'').trim(); if(p){ whoName.textContent='@'+p; igSavedValue.textContent='@'+p; igSavedMsg.style.display='block'; igInput.value=p; } else { whoName.textContent='—'; igSavedMsg.style.display='none'; } }
-    function savePlayer(){ let v=(igInput.value||'').trim().replace(/^@+/,''), ok=/^[A-Za-z0-9_.]{1,32}$/.test(v); if(!ok){ alert("Pseudo Instagram invalide (caractères autorisés: lettres, chiffres, _ et .)"); return; } localStorage.setItem('ksfSnakePlayer', v); loadPlayer(); alert('Profil Instagram enregistré ✅'); }
-    saveIgBtn.addEventListener('click', savePlayer);
-
-    function loadSubmissionsLocal(){ try{ return JSON.parse(localStorage.getItem('ksfSnakeSubmissions')||'[]'); }catch{ return []; } }
-    function saveSubmissionsLocal(arr){ localStorage.setItem('ksfSnakeSubmissions', JSON.stringify(arr)); }
-    function addSubmissionLocal(score){ const ig=(localStorage.getItem('ksfSnakePlayer')||'').trim(); const ts=Date.now(); const rec={ig: ig||null, score, ts}; const arr=loadSubmissionsLocal(); arr.push(rec); saveSubmissionsLocal(arr); }
-
-    async function sendSubmissionCloud(score){ if(!CONFIG.scoresEndpoint) return; const ig=(localStorage.getItem('ksfSnakePlayer')||'').trim(); const payload={ action:'submit', ig, score, ts:Date.now() }; try{ await fetch(CONFIG.scoresEndpoint,{ method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) }); }catch(e){ console.log('sendSubmissionCloud error', e); } }
-    async function fetchLeaderboardCloud(){ if(!CONFIG.scoresEndpoint) return null; try{ const r=await fetch(CONFIG.scoresEndpoint+'?action=leaderboard'); if(!r.ok) return null; const data=await r.json(); return Array.isArray(data)?data:null; }catch(e){ console.log('fetchLeaderboardCloud error', e); return null; } }
-
-    const lbOverlay=document.getElementById('leaderboardOverlay'); const lbTable=document.getElementById('lbTable').querySelector('tbody');
-    function fmtTime(ts){ const d=new Date(ts); return d.toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}); }
-    async function openLeaderboard(){ let rows = await fetchLeaderboardCloud(); if(!rows){ rows = loadSubmissionsLocal().map(r=>({rank:0, instagram:r.ig?('@'+r.ig):'—', score:r.score, ts:r.ts})); rows.sort((a,b)=>b.score-a.score); rows = rows.map((r,i)=>({rank:i+1, instagram:r.instagram, score:r.score, ts:r.ts})); } lbTable.innerHTML=''; rows.slice(0,50).forEach((r,i)=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.rank||i+1}</td><td>${r.instagram||'—'}</td><td>${r.score}</td><td>${fmtTime(r.ts)}</td>`; lbTable.appendChild(tr); }); lbOverlay.classList.add('active'); }
-    document.getElementById('btnLeaderboard').addEventListener('click', openLeaderboard);
-    document.getElementById('btnCloseLb').addEventListener('click', ()=> lbOverlay.classList.remove('active'));
-    document.getElementById('btnClearLocal').addEventListener('click', ()=>{ if(confirm('Vider toutes les données locales (scores + IG) ?')){ localStorage.removeItem('ksfSnakeSubmissions'); } });
-    document.getElementById('btnExportCsv').addEventListener('click', ()=>{ const rows=loadSubmissionsLocal().sort((a,b)=>b.score-a.score); const header=['rank','instagram','score','timestamp']; let csv=header.join(',')+'\n'; rows.forEach((r,i)=>{ csv += `${i+1},${r.ig?('@'+r.ig):''},${r.score},${new Date(r.ts).toISOString()}\n`; }); const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='ksf_snake_scores.csv'; a.click(); URL.revokeObjectURL(url); });
 
     const canvas=document.getElementById('game'); const ctx=canvas.getContext('2d'); let cell; const world={ size: 20 };
     let snake, dir, nextDir, fruit, score, best, timer, speed;
@@ -235,52 +199,13 @@
     const btnStart=document.getElementById('btnStart'); const btnRules=document.getElementById('btnRules'); const btnBack=document.getElementById('btnBack'); const btnRestart=document.getElementById('btnRestart'); const btnShare=document.getElementById('btnShare'); const btnPause=document.getElementById('btnPause'); const btnHow=document.getElementById('btnHow'); const btnReplay=document.getElementById('btnReplay');
 
     function haptic(ms=20){ if('vibrate' in navigator){ navigator.vibrate(ms); } }
-    function loadBest(){ const v=parseInt(localStorage.getItem('ksfSnakeHighScore')||'0',10); best=isNaN(v)?0:v; hiEl.textContent=best; }
-    function saveBest(){ localStorage.setItem('ksfSnakeHighScore', String(best)); }
+    function loadBest(){ const v=parseInt(localStorage.getItem(CONFIG.hiStorageKey)||'0',10); best=isNaN(v)?0:v; hiEl.textContent=best; }
+    function saveBest(){ localStorage.setItem(CONFIG.hiStorageKey, String(best)); }
 
-    function reset(){ snake=[{x:10,y:10},{x:9,y:10},{x:8,y:10}]; dir={x:1,y:0}; nextDir={x:1,y:0}; score=0; scoreEl.textContent=score; speed=140; spawnFruit(); draw(); }
+    function reset(){ snake=[{x:10,y:10},{x:9,y:10},{x:8,y:10}]; dir={x:1,y:0}; nextDir={x:1,y:0}; score=0; scoreEl.textContent=score; speed=CONFIG.speedStartMs; spawnFruit(); draw(); }
     function spawnFruit(){ do{ fruit={ x:Math.floor(Math.random()*world.size), y:Math.floor(Math.random()*world.size) }; } while(snake.some(s=>s.x===fruit.x && s.y===fruit.y)); }
     function drawCell(x,y,color){ ctx.fillStyle=color; ctx.fillRect(x*cell,y*cell,cell,cell); }
-    function drawGrid(){ ctx.strokeStyle='#f3e9a2'; ctx.lineWidth=1; for(let i=0;i<=world.size;i++){ ctx.beginPath(); ctx.moveTo(i*cell,0); ctx.lineTo(i*cell, world.size*cell); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,i*cell); ctx.lineTo(world.size*cell, i*cell); ctx.stroke(); } }
-    function draw(){ ctx.fillStyle='#fffdf0'; ctx.fillRect(0,0,canvas.width,canvas.height); drawGrid(); drawCell(fruit.x,fruit.y,'#ff3b3b'); snake.forEach((s,i)=> drawCell(s.x,s.y, i===0?'#000':'#111')); }
+    function drawGrid(){ ctx.strokeStyle=CONFIG.theme.grid; ctx.lineWidth=1; for(let i=0;i<=world.size;i++){ ctx.beginPath(); ctx.moveTo(i*cell,0); ctx.lineTo(i*cell, world.size*cell); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,i*cell); ctx.lineTo(world.size*cell, i*cell); ctx.stroke(); } }
+    function draw(){ ctx.fillStyle=CONFIG.theme.board; ctx.fillRect(0,0,canvas.width,canvas.height); drawGrid(); drawCell(fruit.x,fruit.y,CONFIG.theme.fruit); snake.forEach((s,i)=> drawCell(s.x,s.y, i===0?CONFIG.theme.head:CONFIG.theme.snake)); }
 
-    function tick(){ if((nextDir.x!==-dir.x)||(nextDir.y!==-dir.y)) dir=nextDir; const head={x:snake[0].x+dir.x, y:snake[0].y+dir.y}; if(head.x<0||head.y<0||head.x>=world.size||head.y>=world.size||snake.some(s=>s.x===head.x && s.y===head.y)) return gameOver(); snake.unshift(head); if(head.x===fruit.x && head.y===fruit.y){ score++; scoreEl.textContent=score; if(score>best){ best=score; hiEl.textContent=best; saveBest(); } if(score % 4===0){ speed=Math.max(70, speed-10); clearInterval(timer); timer=setInterval(tick, speed); } spawnFruit(); } else { snake.pop(); } draw(); }
-
-    function play(){ clearInterval(timer); timer=setInterval(tick, speed); }
-    function pause(){ clearInterval(timer); timer=null; }
-    function togglePause(){ if(timer){ pause(); } else { play(); } btnPause.textContent=timer? '⏯️ Pause':'▶️ Reprendre'; }
-    function gameOver(){ pause(); document.getElementById('finalScore').textContent='Score : '+score; document.getElementById('bestScore').textContent='Meilleur : '+best; sendSubmissionCloud(score); if(!CONFIG.scoresEndpoint){ addSubmissionLocal(score); } gameOverOverlay.classList.add('active'); }
-
-    const keyMap={ ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0}, KeyW:{x:0,y:-1}, KeyS:{x:0,y:1}, KeyA:{x:-1,y:0}, KeyD:{x:1,y:0} };
-    window.addEventListener('keydown',(e)=>{ const nd=keyMap[e.code]; if(nd){ e.preventDefault(); nextDir=nd; haptic(10);} if(e.code==='Space'){ e.preventDefault(); togglePause(); }});
-
-    let touchStart=null; const SWIPE_THRESHOLD=18;
-    function handleSwipe(dx,dy){ if(Math.abs(dx)<SWIPE_THRESHOLD && Math.abs(dy)<SWIPE_THRESHOLD){ togglePause(); return; } if(Math.abs(dx)>Math.abs(dy)) nextDir=dx>0?{x:1,y:0}:{x:-1,y:0}; else nextDir=dy>0?{x:0,y:1}:{x:0,y:-1}; haptic(10); }
-    function onPointerDown(ev){ const t=ev.touches?ev.touches[0]:ev; touchStart={x:t.clientX,y:t.clientY}; }
-    function onPointerUp(ev){ if(!touchStart) return; const t=ev.changedTouches?ev.changedTouches[0]:ev; const dx=t.clientX-touchStart.x; const dy=t.clientY-touchStart.y; touchStart=null; handleSwipe(dx,dy); }
-    canvas.addEventListener('pointerdown', onPointerDown, {passive:true});
-    canvas.addEventListener('pointerup', onPointerUp, {passive:true});
-    canvas.addEventListener('touchstart', onPointerDown, {passive:true});
-    canvas.addEventListener('touchend', onPointerUp, {passive:true});
-
-    const controls=document.getElementById('controls'); const dirMap={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};
-    ['touchstart','touchend','mousedown','click'].forEach(evt=>{ controls.addEventListener(evt,(e)=>{ e.preventDefault(); e.stopPropagation(); }, {passive:false}); });
-    controls.querySelectorAll('[data-dir]').forEach(btn=>{ btn.addEventListener('click',()=>{ nextDir=dirMap[btn.dataset.dir]; haptic(10); }); btn.addEventListener('touchend',()=>{ nextDir=dirMap[btn.dataset.dir]; haptic(10); }, {passive:true}); });
-    document.getElementById('btnReplay').addEventListener('click',()=>{ if(startOverlay.classList.contains('active')) startOverlay.classList.remove('active'); if(gameOverOverlay.classList.contains('active')) gameOverOverlay.classList.remove('active'); reset(); play(); btnPause.textContent='⏯️ Pause'; });
-
-    btnStart.addEventListener('click',()=>{ if(!localStorage.getItem('ksfSnakePlayer')){ alert("Entre ton pseudo Instagram (sans @) pour participer au classement."); return; } startOverlay.classList.remove('active'); reset(); play(); btnPause.textContent='⏯️ Pause'; });
-    btnRules.addEventListener('click',()=>{ startOverlay.classList.remove('active'); rulesOverlay.classList.add('active'); });
-    btnBack.addEventListener('click',()=>{ rulesOverlay.classList.remove('active'); startOverlay.classList.add('active'); });
-    btnRestart.addEventListener('click',()=>{ gameOverOverlay.classList.remove('active'); reset(); play(); btnPause.textContent='⏯️ Pause'; });
-    btnShare.addEventListener('click', async()=>{ const player=localStorage.getItem('ksfSnakePlayer')||''; const text = player?`@${player} a fait ${score} points au Snake KSF ! #KSF`:`J'ai fait ${score} points au Snake KSF ! #KSF`; try{ if(navigator.share){ await navigator.share({text, title:'KSF Snake', url: location.href}); } else { await navigator.clipboard.writeText(text); alert('Score copié ! Colle-le dans ta story Insta 📲'); } }catch(err){} });
-    btnPause.addEventListener('click', togglePause);
-    btnHow.addEventListener('click',()=> rulesOverlay.classList.add('active'));
-
-    function resizeCanvas(){ const w=document.querySelector('.canvas-wrap').clientWidth; const size=Math.round(w); canvas.width=size; canvas.height=size; cell=Math.floor(size/20); if(snake) draw(); }
-    window.addEventListener('resize', resizeCanvas);
-
-    function init(){ loadBest(); loadPlayer(); resizeCanvas(); }
-    init();
-  </script>
-</body>
-</html>
+    function tick(){ if((nextDir.x!==-dir.x)||(nextDir.y!==-dir.y)) dir=nextDir; const head={x:snake[0].x+dir.x, y:snake[0].y+dir.y}; if(head.x<0||head.y<0||head.x>=world.size||head.y>=world.size||snake.some(s=>s.x===head.x && s.y===head.y)) return gameOver(); snake.unshift(head); if(head.x===fruit.x && head.y===fruit.y){ score++; scoreEl.textContent=score; if(score>best){ best=score; hiEl.textContent=best; saveBest(); } if(score % CONFIG.speedStepScore===0){ speed=Math.max(CONFIG.speedMinMs, speed-10); clearInterval(timer); timer=setInterval(tick, speed); } spawnFruit(); }

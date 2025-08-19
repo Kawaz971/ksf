@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>KSF Snake – Concours</title>
-  <meta name="description" content="Mini-jeu Snake pour patienter + Concours jusqu'à 20h : top 3 scores gagnent un produit après ajout & tag Instagram @KSF_streetfood." />
+  <meta name="description" content="Mini-jeu Snake pour patienter + Concours jusqu'à 20h ajoute & tag Instagram @KSF." />
   <style>
     :root{
       --ksf-yellow:#FFD400; --ksf-black:#111; --ksf-white:#fff; --ksf-mint:#00F5C8; --radius:18px;
@@ -83,13 +83,13 @@
         <div class="overlay active" id="startOverlay">
           <div class="panel">
             <h2>🎮 Jouer à Snake</h2>
-            <p> Ajoute et tag ton score sur instagram de @KSF ! Et <strong>tente de gagner</strong> <strong>1 produit gratuit</strong> </p>
+            <p> Ajoute et tag ton score sur instagram de @KSF ! Et <strong>tente de gagner 1 produit gratuit</strong> </p>
             
             <p class="small">Fin du jeu concours à <strong>20:00</strong> (heure locale). Les scores après 20:00 ne sont pas pris en compte.</p>
             <div class="center" style="margin-top:10px">
               <button class="primary" id="btnStart">▶️ Jouer</button>
               <button class="ghost" id="btnRules">ℹ️ Règles</button>
-              <a href="https://instagram.com/ksf_streetfood" target="_blank" rel="noopener"><button class="mint">📲 Instagram</button></a>
+              <a href="https://www.instagram.com/karibeanstreetfood/" target="_blank" rel="noopener"><button class="mint">📲 Instagram</button></a>
             </div>
           </div>
         </div>
@@ -103,7 +103,7 @@
               <li><strong>Pause/Reprendre</strong> : bouton ⏯️ / tape léger</li>
               <li><strong>Desktop</strong> : flèches ou ZQSD</li>
             </ul>
-            <p class="small">Concours : Top 3 avant 20:00. Ajoute & tag @KSF_streetfood en story puis montre la capture du score à la caisse.</p>
+            <p class="small">Concours : Top 3 avant 20:00. Ajoute & tag @KSF en story puis montre la capture du score à la caisse.</p>
             <div class="center" style="margin-top:10px">
               <button class="primary" id="btnBack">OK</button>
             </div>
@@ -119,7 +119,7 @@
             <div class="center" style="margin-top:10px">
               <button class="primary" id="btnRestart">↻ Rejouer</button>
               <button class="mint" id="btnShare">Partager</button>
-              <a href="https://instagram.com/ksf_streetfood" target="_blank" rel="noopener"><button class="ghost">📲 Ouvrir Instagram</button></a>
+              <a href="https://www.instagram.com/karibeanstreetfood/" target="_blank" rel="noopener"><button class="ghost">📲 Ouvrir Instagram</button></a>
             </div>
           </div>
         </div>
@@ -145,7 +145,7 @@
       </div>
 
       <div class="footer">
-        <div>Insta : <strong>@KSF_streetfood</strong> • <strong>@Sowbella_France</strong></div>
+        <div>Insta : <strong>@KSF</strong> • <strong>@Sowbella_France</strong></div>
         <div class="small">HTML5 offline-ready • Pense à faire une capture 📸</div>
       </div>
     </div>
@@ -298,7 +298,7 @@
     btnRules.addEventListener('click', ()=>{ startOverlay.classList.remove('active'); rulesOverlay.classList.add('active'); });
     btnBack.addEventListener('click', ()=>{ rulesOverlay.classList.remove('active'); startOverlay.classList.add('active'); });
     btnRestart.addEventListener('click', ()=>{ gameOverOverlay.classList.remove('active'); reset(); play(); btnPause.textContent='⏯️ Pause'; });
-    btnShare.addEventListener('click', async ()=>{ const text = `J'ai fait ${score} points au Snake KSF ! @KSF_streetfood @Sowbella_France`; try{ if(navigator.share){ await navigator.share({text, title:'KSF Snake', url: location.href}); } else { await navigator.clipboard.writeText(text); alert('Score copié ! Colle-le dans ta story Insta 📲'); } }catch(err){} });
+    btnShare.addEventListener('click', async ()=>{ const text = `J'ai fait ${score} points au Snake KSF ! @KSF @Sowbella_France`; try{ if(navigator.share){ await navigator.share({text, title:'KSF Snake', url: location.href}); } else { await navigator.clipboard.writeText(text); alert('Score copié ! Colle-le dans ta story Insta 📲'); } }catch(err){} });
     btnPause.addEventListener('click', togglePause);
     btnHow.addEventListener('click', ()=> rulesOverlay.classList.add('active'));
 

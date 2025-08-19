@@ -2,68 +2,59 @@
 <html lang="fr">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KSF Snake – Jouer</title>
-  <meta name="description" content="Mini-jeu Snake pour patienter dans la file – KSF / Sowbella" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>KSF Snake – Concours</title>
+  <meta name="description" content="Mini-jeu Snake pour patienter + Concours jusqu'à 20h : top 3 scores gagnent un produit après ajout & tag Instagram @KSF_streetfood." />
   <style>
     :root{
-      --ksf-yellow:#FFD400;
-      --ksf-black:#111111;
-      --ksf-white:#ffffff;
-      --ksf-accent:#00F5C8;
-      --radius:18px;
+      --ksf-yellow:#FFD400; --ksf-black:#111; --ksf-white:#fff; --ksf-mint:#00F5C8; --radius:18px;
     }
     *{box-sizing:border-box}
     html,body{height:100%; overscroll-behavior:none}
-    body{
-      margin:0; background: radial-gradient(1200px 600px at 10% 10%, #fff9d6 0%, #fff3a6 30%, #fff 60%), var(--ksf-white);
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial;
-      color:var(--ksf-black); display:flex; align-items:center; justify-content:center; padding:16px; overflow:hidden; touch-action:none;
-    }
-    .app{width:min(520px, 100%);} 
-    .card{background:var(--ksf-white); border:2px solid var(--ksf-black); border-radius:var(--radius); box-shadow:0 8px 0 var(--ksf-black); overflow:hidden}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; color:var(--ksf-black); background:radial-gradient(900px 480px at 10% 10%, #fff7bd 0%, #fff3a6 35%, #fff 65%); display:flex; align-items:center; justify-content:center; padding:16px; overflow:hidden; touch-action:none}
+    .app{width:min(560px,100%)}
+    .card{background:var(--ksf-white); border:2px solid var(--ksf-black); border-radius:var(--radius); box-shadow:0 10px 0 var(--ksf-black); overflow:hidden}
     .header{display:flex; align-items:center; gap:12px; background:var(--ksf-yellow); border-bottom:2px solid var(--ksf-black); padding:12px 14px}
-    .brand{display:flex; align-items:center; gap:10px; font-weight:900; letter-spacing:.5px}
-    .brand img{width:38px;height:38px;border-radius:12px;border:2px solid var(--ksf-black);background:#fff;object-fit:cover}
-    .brand .title{font-size:20px}
-    .badges{margin-left:auto;display:flex;gap:8px;align-items:center}
-    .badge{font-size:12px;padding:6px 10px;border:2px solid var(--ksf-black);border-radius:999px;background:#fff}
+    .brand{display:flex; align-items:center; gap:10px; font-weight:900}
+    .brand img{width:40px;height:40px;border-radius:12px;border:2px solid var(--ksf-black);background:#fff;object-fit:cover}
+    .brand .title{font-size:20px; letter-spacing:.3px}
+    .badges{margin-left:auto; display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .badge{font-size:12px; padding:6px 10px; border:2px solid var(--ksf-black); border-radius:999px; background:#fff}
 
-    .canvas-wrap{position:relative; aspect-ratio:4/5; background:#fef9d8; display:grid; place-items:center}
-    canvas{width:100%;height:100%;image-rendering:pixelated; background:#fffdf0; border-bottom:2px solid var(--ksf-black)}
+    .contest{display:flex; align-items:center; gap:10px; padding:10px 12px; background:#fff; border-bottom:2px dashed var(--ksf-black)}
+    .contest .dot{width:10px; height:10px; border-radius:50%; background:#f33; box-shadow:0 0 0 4px rgba(243,51,51,.15)}
+    .contest .text{font-size:14px; line-height:1.35}
+    .contest .count{font-weight:800}
+
+    .canvas-wrap{position:relative; background:#fef9d8}
+    canvas{width:100%; aspect-ratio:1/1; display:block; image-rendering:pixelated; background:#fffdf0; border-bottom:2px solid var(--ksf-black)}
 
     .hud{display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px 12px; border-top:2px dashed var(--ksf-black); background:#fff}
-    .hud .scores{display:flex; gap:10px; align-items:center}
-    .score-chip{border:2px solid var(--ksf-black); padding:6px 10px; border-radius:999px; font-weight:700; background:#fff}
-    .actions{display:flex; gap:8px;}
-    button{cursor:pointer; font-weight:800; border:2px solid var(--ksf-black); border-radius:12px; padding:10px 12px; background:#fff; transition:transform .04s ease}
+    .scores{display:flex; gap:10px; align-items:center}
+    .chip{border:2px solid var(--ksf-black); padding:6px 10px; border-radius:999px; font-weight:800; background:#fff}
+    .actions{display:flex; gap:8px; flex-wrap:wrap}
+    button{cursor:pointer; font-weight:800; border:2px solid var(--ksf-black); border-radius:12px; padding:10px 12px; background:#fff; transition:transform .04s ease; touch-action:manipulation}
     button:active{transform:translateY(1px)}
-    .primary{background:var(--ksf-yellow)}
-    .ghost{background:#fff}
-    .mint{background:var(--ksf-accent)}
+    .primary{background:var(--ksf-yellow)} .mint{background:var(--ksf-mint)} .ghost{background:#fff}
 
-    /* Nouvelles commandes mobiles : disposition demandée */
     .controls{display:grid; grid-template-areas: ". up ." "left down right" "replay replay replay"; grid-template-columns:1fr 1fr 1fr; gap:10px; padding:12px; background:#fff; border-top:2px dashed var(--ksf-black); justify-items:center; align-items:center}
-    .controls button{width:64px;height:64px;font-size:22px;border:2px solid var(--ksf-black);border-radius:14px;background:#fff;touch-action:manipulation}
+    .controls button{width:68px;height:68px;font-size:22px}
     .controls .up{grid-area:up}
     .controls .down{grid-area:down}
     .controls .left{grid-area:left}
     .controls .right{grid-area:right}
-    .controls .replay{grid-area:replay;width:180px;height:50px;font-size:16px}
-
-    /* Overlays */
-    .overlay{position:absolute; inset:0; display:none; place-items:center; background:rgba(255,255,255,.9)}
-    .overlay.active{display:grid}
-    .panel{width:min(92%, 420px); background:#fff; border:2px solid var(--ksf-black); border-radius:16px; box-shadow:0 8px 0 var(--ksf-black); padding:16px}
-    .panel h2{margin:.2rem 0 0.6rem}
-    .panel p{margin:.5rem 0; line-height:1.35}
-    .list{padding-left:18px}
-    .center{display:flex; justify-content:center}
-    .small{font-size:12px; opacity:.75}
-    .muted{opacity:.8}
+    .controls .replay{grid-area:replay; width:200px; height:52px; font-size:16px}
 
     .footer{padding:10px 12px; font-size:12px; background:#fff; border-top:2px dashed var(--ksf-black); display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap}
-    .link{color:inherit}
+
+    .overlay{position:absolute; inset:0; display:none; place-items:center; background:rgba(255,255,255,.92)}
+    .overlay.active{display:grid}
+    .panel{width:min(92%, 460px); background:#fff; border:2px solid var(--ksf-black); border-radius:16px; box-shadow:0 8px 0 var(--ksf-black); padding:16px}
+    .panel h2{margin:.2rem 0 0.6rem}
+    .panel p{margin:.5rem 0; line-height:1.4}
+    .list{padding-left:18px}
+    .center{display:flex; justify-content:center; gap:8px}
+    .small{font-size:12px; opacity:.75}
   </style>
 </head>
 <body>
@@ -75,129 +66,171 @@
           <div class="title" id="brandTitle">KSF – Mini Snake</div>
         </div>
         <div class="badges">
-          <div class="badge">🎁 Score du jour = surprise</div>
+          <div class="badge">🎁 Top 3 = 1 produit</div>
+          <div class="badge">📸 Montre la capture</div>
         </div>
       </div>
 
+      <div class="contest">
+        <div class="dot" id="liveDot"></div>
+        <div class="text" id="contestText">Concours en cours • Fin à 20:00 • Temps restant : <span class="count" id="countdown">--:--:--</span></div>
+      </div>
+
       <div class="canvas-wrap">
-        <canvas id="game" width="400" height="500"></canvas>
+        <canvas id="game" width="500" height="500"></canvas>
+
         <!-- Overlays -->
         <div class="overlay active" id="startOverlay">
           <div class="panel">
             <h2>🎮 Jouer à Snake</h2>
-            <p class="muted">Fais le meilleur score pendant l'attente. Montre ta capture à la caisse pour tenter de gagner un <strong>cadeau</strong> 🎁</p>
+            <p>Fais le meilleur score pendant l'attente. Les <strong>3 meilleurs scores</strong> du jour gagnent <strong>1 produit gratuit</strong> après :</p>
             <ul class="list">
-              <li>Clavier: flèches ou Z/Q/S/D</li>
-              <li>Mobile: balayez l'écran (haut/bas/gauche/droite) ou utilisez les flèches ci‑dessous</li>
-              <li>Pause / Reprendre: bouton ⏸️ / ▶️ ou tape léger</li>
+              <li>Avoir ajouté Instagram <strong>@KSF_streetfood</strong></li>
+              <li>Avoir tagué <strong>@KSF_streetfood</strong> en story</li>
+              <li>Montrer la <strong>capture d'écran</strong> du score à la caisse</li>
             </ul>
-            <div class="center" style="gap:8px; margin-top:10px">
+            <p class="small">Fin du jeu concours à <strong>20:00</strong> (heure locale). Les scores après 20:00 ne sont pas pris en compte.</p>
+            <div class="center" style="margin-top:10px">
               <button class="primary" id="btnStart">▶️ Jouer</button>
-              <button class="ghost" id="btnHow">ℹ️ Règles</button>
+              <button class="ghost" id="btnRules">ℹ️ Règles</button>
+              <a href="https://instagram.com/ksf_streetfood" target="_blank" rel="noopener"><button class="mint">📲 Instagram</button></a>
             </div>
           </div>
         </div>
+
         <div class="overlay" id="rulesOverlay">
           <div class="panel">
             <h2>ℹ️ Règles</h2>
-            <p>Mange les fruits, évite les murs et ta propre queue. Chaque fruit = +1 point, la vitesse augmente régulièrement.</p>
-            <p class="small">Astuce: anticipe tes virages 😉</p>
+            <p>Mange les fruits, évite les murs et ta queue. Chaque fruit = <strong>+1</strong>. La vitesse augmente au fil des points.</p>
+            <ul class="list">
+              <li><strong>Mobile</strong> : boutons ⬆️⬇️⬅️➡️ ou balayage</li>
+              <li><strong>Pause/Reprendre</strong> : bouton ⏯️ / tape léger</li>
+              <li><strong>Desktop</strong> : flèches ou ZQSD</li>
+            </ul>
+            <p class="small">Concours : Top 3 avant 20:00. Ajoute & tag @KSF_streetfood en story puis montre la capture du score à la caisse.</p>
             <div class="center" style="margin-top:10px">
-              <button class="primary" id="btnBack">Ok, j'ai compris</button>
+              <button class="primary" id="btnBack">OK</button>
             </div>
           </div>
         </div>
+
         <div class="overlay" id="gameOverOverlay">
-          <div class="panel" id="gameOverPanel">
+          <div class="panel">
             <h2>💥 Perdu !</h2>
-            <p id="finalScore">Score: 0</p>
-            <p id="bestScore">Meilleur: 0</p>
-            <div class="center" style="gap:8px; margin-top:10px">
+            <p id="finalScore">Score : 0</p>
+            <p id="bestScore">Meilleur : 0</p>
+            <p id="contestNote" class="small">Si c'est avant 20:00, prends une <strong>capture</strong> et passe à la caisse 📸</p>
+            <div class="center" style="margin-top:10px">
               <button class="primary" id="btnRestart">↻ Rejouer</button>
               <button class="mint" id="btnShare">Partager</button>
+              <a href="https://instagram.com/ksf_streetfood" target="_blank" rel="noopener"><button class="ghost">📲 Ouvrir Instagram</button></a>
             </div>
-            <p class="small muted" style="margin-top:10px">Astuce: ajoute le jeu à ton écran d'accueil pour y rejouer plus tard 📲</p>
           </div>
         </div>
       </div>
 
       <div class="hud">
         <div class="scores">
-          <div class="score-chip">Score: <span id="score">0</span></div>
-          <div class="score-chip">Best: <span id="hi">0</span></div>
+          <div class="chip">Score: <span id="score">0</span></div>
+          <div class="chip">Best: <span id="hi">0</span></div>
         </div>
         <div class="actions">
-          <button id="btnPause">⏸️ Pause</button>
-          <a id="backLink" class="link" href="#" target="_self"><button class="ghost">⬅️ Linktree</button></a>
+          <button id="btnPause">⏯️ Pause</button>
+          <button id="btnHow">ℹ️</button>
         </div>
       </div>
 
-      <!-- Contrôles mobiles (layout demandé) -->
       <div class="controls" id="controls">
         <button type="button" class="up" data-dir="up">⬆️</button>
         <button type="button" class="down" data-dir="down">⬇️</button>
         <button type="button" class="left" data-dir="left">⬅️</button>
         <button type="button" class="right" data-dir="right">➡️</button>
-        <button type="button" class="replay" id="replayBtn">⏯️ Start / Rejouer</button>
+        <button type="button" class="replay" id="btnReplay">⏯️ Start / Rejouer</button>
       </div>
 
       <div class="footer">
-        <div>Insta: <strong>@Sowbella_France</strong> • <strong>@KSF_streetfood</strong></div>
-        <div class="muted">Personnalisé pour l'attente en file • HTML5 offline-ready</div>
+        <div>Insta : <strong>@KSF_streetfood</strong> • <strong>@Sowbella_France</strong></div>
+        <div class="small">HTML5 offline-ready • Pense à faire une capture 📸</div>
       </div>
     </div>
   </div>
 
   <script>
-    // ===== CONFIG =====
+    // ===== Config =====
     const CONFIG = {
       brandTitle: 'KSF – Mini Snake',
-      logoUrl: '', // ex: 'https://.../logo.png' (laisser vide pour logo texte)
-      linktreeBackUrl: 'https://linktr.ee/ksf_fr',
-      grid: 20, // 20x20 cellules
-      speedStartMs: 140, // vitesse initiale
-      speedMinMs: 70, // min
-      speedStepScore: 4, // accélération tous les X points
+      logoUrl: '', // URL PNG si dispo
+      grid: 20,
+      speedStartMs: 140,
+      speedMinMs: 70,
+      speedStepScore: 4,
       hiStorageKey: 'ksfSnakeHighScore',
-      theme: { snake: '#111111', head: '#000000', fruit: '#ff3b3b', board: '#fffdf0', gridLine: '#f3e9a2' }
+      contestEndHour: 20, // 20:00 local time
+      theme: { snake:'#111', head:'#000', fruit:'#ff3b3b', board:'#fffdf0', grid:'#f3e9a2' }
     };
 
-    // UI init
-    const brandTitle = document.getElementById('brandTitle');
+    // ===== Helpers concours =====
+    function getTodayEnd(){
+      const now = new Date();
+      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), CONFIG.contestEndHour, 0, 0, 0);
+      return end;
+    }
+    let contestEnded = false;
+    const countdownEl = document.getElementById('countdown');
+    const liveDot = document.getElementById('liveDot');
+    function updateCountdown(){
+      const now = new Date();
+      const end = getTodayEnd();
+      if(now >= end){
+        contestEnded = true;
+        countdownEl.textContent = 'Terminé';
+        document.getElementById('contestText').textContent = 'Concours terminé – rendez-vous demain !';
+        liveDot.style.background = '#888';
+        document.getElementById('contestNote').textContent = 'Concours terminé. Tu peux continuer à jouer pour le fun !';
+        return;
+      }
+      const diff = end - now; // ms
+      const h = String(Math.floor(diff/3_600_000)).padStart(2,'0');
+      const m = String(Math.floor((diff%3_600_000)/60_000)).padStart(2,'0');
+      const s = String(Math.floor((diff%60_000)/1000)).padStart(2,'0');
+      countdownEl.textContent = `${h}:${m}:${s}`;
+    }
+    setInterval(updateCountdown, 1000); updateCountdown();
+
+    // ===== Branding =====
+    document.getElementById('brandTitle').textContent = CONFIG.brandTitle;
     const logo = document.getElementById('logo');
-    const backLink = document.getElementById('backLink');
-    brandTitle.textContent = CONFIG.brandTitle;
-    backLink.href = CONFIG.linktreeBackUrl;
     if(CONFIG.logoUrl){ logo.src = CONFIG.logoUrl; logo.style.display='block'; }
     else{
       const svg = encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='12' fill='%23FFD400' stroke='%23111' stroke-width='4'/><text x='50%' y='56%' text-anchor='middle' font-weight='900' font-size='28' fill='%23111' font-family='Arial, Helvetica, sans-serif'>KSF</text></svg>`);
       logo.src = `data:image/svg+xml;charset=utf-8,${svg}`; logo.style.display='block';
     }
 
-    // Anti scroll / refresh mobile
+    // ===== Anti scroll / refresh mobile =====
     document.addEventListener('touchmove', (e)=>{ if(e.touches.length===1){ e.preventDefault(); } }, {passive:false});
 
-    // Canvas & game state
+    // ===== Game state =====
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
-    let cell; // calculée après resize
-    const world = { size: CONFIG.grid };
-
+    let cell; const world = { size: CONFIG.grid };
     let snake, dir, nextDir, fruit, score, best, timer, speed;
 
+    const scoreEl = document.getElementById('score');
+    const hiEl = document.getElementById('hi');
     const startOverlay = document.getElementById('startOverlay');
     const rulesOverlay = document.getElementById('rulesOverlay');
     const gameOverOverlay = document.getElementById('gameOverOverlay');
-    const scoreEl = document.getElementById('score');
-    const hiEl = document.getElementById('hi');
 
     const btnStart = document.getElementById('btnStart');
-    const btnHow = document.getElementById('btnHow');
+    const btnRules = document.getElementById('btnRules');
     const btnBack = document.getElementById('btnBack');
     const btnRestart = document.getElementById('btnRestart');
     const btnShare = document.getElementById('btnShare');
     const btnPause = document.getElementById('btnPause');
-    const btnReplay = document.getElementById('replayBtn');
+    const btnHow = document.getElementById('btnHow');
+    const btnReplay = document.getElementById('btnReplay');
+
+    function haptic(ms=20){ if('vibrate' in navigator){ navigator.vibrate(ms); } }
 
     function loadBest(){ const v = parseInt(localStorage.getItem(CONFIG.hiStorageKey)||'0',10); best = isNaN(v)?0:v; hiEl.textContent = best; }
     function saveBest(){ localStorage.setItem(CONFIG.hiStorageKey, String(best)); }
@@ -215,7 +248,7 @@
     }
 
     function drawCell(x,y,color){ ctx.fillStyle = color; ctx.fillRect(x*cell, y*cell, cell, cell); }
-    function drawGrid(){ ctx.strokeStyle = CONFIG.theme.gridLine; ctx.lineWidth = 1; for(let i=0;i<=world.size;i++){ ctx.beginPath(); ctx.moveTo(i*cell,0); ctx.lineTo(i*cell, world.size*cell); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,i*cell); ctx.lineTo(world.size*cell, i*cell); ctx.stroke(); } }
+    function drawGrid(){ ctx.strokeStyle = CONFIG.theme.grid; ctx.lineWidth = 1; for(let i=0;i<=world.size;i++){ ctx.beginPath(); ctx.moveTo(i*cell,0); ctx.lineTo(i*cell, world.size*cell); ctx.stroke(); ctx.beginPath(); ctx.moveTo(0,i*cell); ctx.lineTo(world.size*cell, i*cell); ctx.stroke(); } }
 
     function draw(){ ctx.fillStyle = CONFIG.theme.board; ctx.fillRect(0,0,canvas.width, canvas.height); drawGrid(); drawCell(fruit.x, fruit.y, CONFIG.theme.fruit); snake.forEach((s,i)=> drawCell(s.x,s.y, i===0?CONFIG.theme.head:CONFIG.theme.snake)); }
 
@@ -234,22 +267,16 @@
 
     function play(){ clearInterval(timer); timer = setInterval(tick, speed); }
     function pause(){ clearInterval(timer); timer=null; }
-    function togglePause(){ if(timer){ pause(); } else { play(); } updatePauseButtons(); }
-    function updatePauseButtons(){ btnPause.textContent = timer? '⏸️ Pause' : '▶️ Reprendre'; }
+    function togglePause(){ if(timer){ pause(); } else { play(); } btnPause.textContent = timer? '⏯️ Pause' : '▶️ Reprendre'; }
+    function gameOver(){ pause(); document.getElementById('finalScore').textContent = 'Score : '+score; document.getElementById('bestScore').textContent = 'Meilleur : '+best; gameOverOverlay.classList.add('active'); }
 
-    function gameOver(){ pause(); document.getElementById('finalScore').textContent = 'Score: '+score; document.getElementById('bestScore').textContent = 'Meilleur: '+best; gameOverOverlay.classList.add('active'); }
-
-    // ===== Clavier (desktop) =====
+    // ===== Inputs clavier =====
     const keyMap = { ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1}, ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0}, KeyW:{x:0,y:-1}, KeyS:{x:0,y:1}, KeyA:{x:-1,y:0}, KeyD:{x:1,y:0} };
-    window.addEventListener('keydown', (e)=>{ if(e.code==='Space'){ e.preventDefault(); togglePause(); return; } const nd = keyMap[e.code]; if(nd){ e.preventDefault(); nextDir = nd; } });
+    window.addEventListener('keydown', (e)=>{ const nd = keyMap[e.code]; if(nd){ e.preventDefault(); nextDir = nd; haptic(10);} if(e.code==='Space'){ e.preventDefault(); togglePause(); }});
 
     // ===== Gestes tactiles (balayage + tape) =====
-    let touchStart = null; const SWIPE_THRESHOLD = 18; // px
-    function handleSwipe(dx, dy){
-      if(Math.abs(dx) < SWIPE_THRESHOLD && Math.abs(dy) < SWIPE_THRESHOLD){ togglePause(); return; }
-      if(Math.abs(dx) > Math.abs(dy)) nextDir = dx>0 ? {x:1,y:0} : {x:-1,y:0};
-      else nextDir = dy>0 ? {x:0,y:1} : {x:0,y:-1};
-    }
+    let touchStart = null; const SWIPE_THRESHOLD = 18;
+    function handleSwipe(dx, dy){ if(Math.abs(dx) < SWIPE_THRESHOLD && Math.abs(dy) < SWIPE_THRESHOLD){ togglePause(); return; } if(Math.abs(dx) > Math.abs(dy)) nextDir = dx>0 ? {x:1,y:0} : {x:-1,y:0}; else nextDir = dy>0 ? {x:0,y:1} : {x:0,y:-1}; haptic(10); }
     function onPointerDown(ev){ const t = ev.touches ? ev.touches[0] : ev; touchStart = {x:t.clientX, y:t.clientY}; }
     function onPointerUp(ev){ if(!touchStart) return; const t = ev.changedTouches ? ev.changedTouches[0] : ev; const dx = t.clientX - touchStart.x; const dy = t.clientY - touchStart.y; touchStart = null; handleSwipe(dx, dy); }
     canvas.addEventListener('pointerdown', onPointerDown, {passive:true});
@@ -259,26 +286,32 @@
 
     // ===== Boutons à l'écran =====
     const dirMap = {up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}};
-    document.querySelectorAll('[data-dir]').forEach(btn=>{
-      // Empêche tout scroll/refresh sur Android
-      ['click','touchstart'].forEach(evt=> btn.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); } , {passive:false}) );
-      btn.addEventListener('click', ()=>{ nextDir = dirMap[btn.dataset.dir]; });
-      btn.addEventListener('touchend', (e)=>{ e.preventDefault(); nextDir = dirMap[btn.dataset.dir]; });
+    const controls = document.getElementById('controls');
+    // Bloque toute action par défaut sur cette zone (anti refresh sur Android)
+    ['touchstart','touchend','mousedown','click'].forEach(evt=>{
+      controls.addEventListener(evt, (e)=>{ e.preventDefault(); e.stopPropagation(); }, {passive:false});
     });
+    controls.querySelectorAll('[data-dir]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{ nextDir = dirMap[btn.dataset.dir]; haptic(10); });
+      btn.addEventListener('touchend', ()=>{ nextDir = dirMap[btn.dataset.dir]; haptic(10); }, {passive:true});
+    });
+    document.getElementById('btnReplay').addEventListener('click', ()=>{ if(startOverlay.classList.contains('active')) startOverlay.classList.remove('active'); if(gameOverOverlay.classList.contains('active')) gameOverOverlay.classList.remove('active'); reset(); play(); btnPause.textContent = '⏯️ Pause'; });
 
     // ===== Buttons =====
-    btnStart.addEventListener('click', ()=>{ startOverlay.classList.remove('active'); reset(); play(); updatePauseButtons(); });
-    btnHow.addEventListener('click', ()=>{ startOverlay.classList.remove('active'); rulesOverlay.classList.add('active'); });
+    btnStart.addEventListener('click', ()=>{ startOverlay.classList.remove('active'); reset(); play(); btnPause.textContent='⏯️ Pause'; });
+    btnRules.addEventListener('click', ()=>{ startOverlay.classList.remove('active'); rulesOverlay.classList.add('active'); });
     btnBack.addEventListener('click', ()=>{ rulesOverlay.classList.remove('active'); startOverlay.classList.add('active'); });
-    btnRestart.addEventListener('click', ()=>{ gameOverOverlay.classList.remove('active'); reset(); play(); updatePauseButtons(); });
-    btnShare.addEventListener('click', async ()=>{ const text = `J'ai fait ${score} points au Snake KSF ! @Sowbella_France @KSF_streetfood`; try{ if(navigator.share){ await navigator.share({text, title:'KSF Snake', url: location.href}); } else { await navigator.clipboard.writeText(text); alert('Score copié ! Colle-le dans ta story Insta 📲'); } }catch(err){} });
+    btnRestart.addEventListener('click', ()=>{ gameOverOverlay.classList.remove('active'); reset(); play(); btnPause.textContent='⏯️ Pause'; });
+    btnShare.addEventListener('click', async ()=>{ const text = `J'ai fait ${score} points au Snake KSF ! @KSF_streetfood @Sowbella_France`; try{ if(navigator.share){ await navigator.share({text, title:'KSF Snake', url: location.href}); } else { await navigator.clipboard.writeText(text); alert('Score copié ! Colle-le dans ta story Insta 📲'); } }catch(err){} });
     btnPause.addEventListener('click', togglePause);
-    btnReplay.addEventListener('click', ()=>{ if(startOverlay.classList.contains('active')){ startOverlay.classList.remove('active'); } if(gameOverOverlay.classList.contains('active')){ gameOverOverlay.classList.remove('active'); } reset(); play(); updatePauseButtons(); });
+    btnHow.addEventListener('click', ()=> rulesOverlay.classList.add('active'));
 
-    // ===== Init & responsive =====
-    function resizeCanvas(){ const w = document.querySelector('.canvas-wrap').clientWidth; const h = w*5/4; canvas.width = Math.round(w); canvas.height = Math.round(h); cell = Math.floor(Math.min(canvas.width, canvas.height) / CONFIG.grid); if(snake) draw(); }
+    // ===== Responsive =====
+    function resizeCanvas(){ const w = document.querySelector('.canvas-wrap').clientWidth; const size = Math.round(w); canvas.width = size; canvas.height = size; cell = Math.floor(size / CONFIG.grid); if(snake) draw(); }
     window.addEventListener('resize', resizeCanvas);
-    function init(){ loadBest(); resizeCanvas(); updatePauseButtons(); }
+
+    // ===== Init =====
+    function init(){ loadBest(); resizeCanvas(); }
     init();
   </script>
 </body>

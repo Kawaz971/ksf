@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>KSF Snake – Concours</title>
-  <meta name="description" content="Mini-jeu Snake pour patienter + Concours jusqu'à 20h : top 3 scores gagnent un produit après ajout & tag Instagram @KSF_streetfood." />
+  <meta name="description" content="Mini-jeu Snake pour patienter • Concours : Ajoute & tag Instagram @KSF et tente de gagner un produit." />
   <style>
     :root{
       --ksf-yellow:#FFD400; --ksf-black:#111; --ksf-white:#fff; --ksf-mint:#00F5C8; --radius:18px;
@@ -72,8 +72,9 @@
       </div>
 
       <div class="contest">
-        <div class="dot" id="liveDot"></div>
-        <div class="text" id="contestText">Concours en cours • Fin à 20:00 • Temps restant : <span class="count" id="countdown">--:--:--</span></div>
+        <div class="dot" style="background:#2ecc71"></div>
+        <div class="text">Concours en cours • Vise le <strong>Top 3</strong> et montre ta capture à la caisse 🎉</div>
+      </div>
       </div>
 
       <div class="canvas-wrap">
@@ -83,17 +84,16 @@
         <div class="overlay active" id="startOverlay">
           <div class="panel">
             <h2>🎮 Jouer à Snake</h2>
-            <p>Fais le meilleur score pendant l'attente. Les <strong>3 meilleurs scores</strong> du jour gagnent <strong>1 produit gratuit</strong> après :</p>
+            <p>Jeux concour. Essaye de gagner <strong>un produit gratuit</strong> de @KSF <strong>joue aux jeux snake et partage ton score sur notre instagram</strong> après :</p>
             <ul class="list">
-              <li>Avoir ajouté Instagram <strong>@KSF_streetfood</strong></li>
-              <li>Avoir tagué <strong>@KSF_streetfood</strong> en story</li>
-              <li>Montrer la <strong>capture d'écran</strong> du score à la caisse</li>
+              <li>Avoir ajouté Instagram <strong>@karibeanstreetfood</strong></li>
+              <li>Avoir tagué <strong>@KSF</strong> en story</li>
             </ul>
-            <p class="small">Fin du jeu concours à <strong>20:00</strong> (heure locale). Les scores après 20:00 ne sont pas pris en compte.</p>
+            
             <div class="center" style="margin-top:10px">
               <button class="primary" id="btnStart">▶️ Jouer</button>
               <button class="ghost" id="btnRules">ℹ️ Règles</button>
-              <a href="https://instagram.com/ksf_streetfood" target="_blank" rel="noopener"><button class="mint">📲 Instagram</button></a>
+              <a href="https://instagram.com/karibeanstreetfood" target="_blank" rel="noopener"><button class="mint">📲 Instagram</button></a>
             </div>
           </div>
         </div>
@@ -107,7 +107,7 @@
               <li><strong>Pause/Reprendre</strong> : bouton ⏯️ / tape léger</li>
               <li><strong>Desktop</strong> : flèches ou ZQSD</li>
             </ul>
-            <p class="small">Concours : Top 3 avant 20:00. Ajoute & tag @KSF_streetfood en story puis montre la capture du score à la caisse.</p>
+            
             <div class="center" style="margin-top:10px">
               <button class="primary" id="btnBack">OK</button>
             </div>
@@ -119,11 +119,11 @@
             <h2>💥 Perdu !</h2>
             <p id="finalScore">Score : 0</p>
             <p id="bestScore">Meilleur : 0</p>
-            <p id="contestNote" class="small">Si c'est avant 20:00, prends une <strong>capture</strong> et passe à la caisse 📸</p>
+            <p id="contestNote" class="small">Prends une <strong>capture</strong> et partage sur ton insta "Tirage au sort en fin de journée" 📸</p>
             <div class="center" style="margin-top:10px">
               <button class="primary" id="btnRestart">↻ Rejouer</button>
               <button class="mint" id="btnShare">Partager</button>
-              <a href="https://instagram.com/ksf_streetfood" target="_blank" rel="noopener"><button class="ghost">📲 Ouvrir Instagram</button></a>
+              <a href="https://instagram.com/karibeanstreetfood" target="_blank" rel="noopener"><button class="ghost">📲 Ouvrir Instagram</button></a>
             </div>
           </div>
         </div>
@@ -149,7 +149,7 @@
       </div>
 
       <div class="footer">
-        <div>Insta : <strong>@KSF_streetfood</strong> • <strong>@Sowbella_France</strong></div>
+        <div>Insta : <strong>@KSF</strong> • <strong>@Sowbella_France</strong></div>
         <div class="small">HTML5 offline-ready • Pense à faire une capture 📸</div>
       </div>
     </div>
@@ -164,38 +164,9 @@
       speedStartMs: 140,
       speedMinMs: 70,
       speedStepScore: 4,
-      hiStorageKey: 'ksfSnakeHighScore',
-      contestEndHour: 20, // 20:00 local time
+      hiStorageKey: 'ksfSnakeHighScore', // 20:00 local time
       theme: { snake:'#111', head:'#000', fruit:'#ff3b3b', board:'#fffdf0', grid:'#f3e9a2' }
     };
-
-    // ===== Helpers concours =====
-    function getTodayEnd(){
-      const now = new Date();
-      const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), CONFIG.contestEndHour, 0, 0, 0);
-      return end;
-    }
-    let contestEnded = false;
-    const countdownEl = document.getElementById('countdown');
-    const liveDot = document.getElementById('liveDot');
-    function updateCountdown(){
-      const now = new Date();
-      const end = getTodayEnd();
-      if(now >= end){
-        contestEnded = true;
-        countdownEl.textContent = 'Terminé';
-        document.getElementById('contestText').textContent = 'Concours terminé – rendez-vous demain !';
-        liveDot.style.background = '#888';
-        document.getElementById('contestNote').textContent = 'Concours terminé. Tu peux continuer à jouer pour le fun !';
-        return;
-      }
-      const diff = end - now; // ms
-      const h = String(Math.floor(diff/3_600_000)).padStart(2,'0');
-      const m = String(Math.floor((diff%3_600_000)/60_000)).padStart(2,'0');
-      const s = String(Math.floor((diff%60_000)/1000)).padStart(2,'0');
-      countdownEl.textContent = `${h}:${m}:${s}`;
-    }
-    setInterval(updateCountdown, 1000); updateCountdown();
 
     // ===== Branding =====
     document.getElementById('brandTitle').textContent = CONFIG.brandTitle;
@@ -302,7 +273,7 @@
     btnRules.addEventListener('click', ()=>{ startOverlay.classList.remove('active'); rulesOverlay.classList.add('active'); });
     btnBack.addEventListener('click', ()=>{ rulesOverlay.classList.remove('active'); startOverlay.classList.add('active'); });
     btnRestart.addEventListener('click', ()=>{ gameOverOverlay.classList.remove('active'); reset(); play(); btnPause.textContent='⏯️ Pause'; });
-    btnShare.addEventListener('click', async ()=>{ const text = `J'ai fait ${score} points au Snake KSF ! @KSF_streetfood @Sowbella_France`; try{ if(navigator.share){ await navigator.share({text, title:'KSF Snake', url: location.href}); } else { await navigator.clipboard.writeText(text); alert('Score copié ! Colle-le dans ta story Insta 📲'); } }catch(err){} });
+    btnShare.addEventListener('click', async ()=>{ const text = `J'ai fait ${score} points au Snake KSF ! @KSF @Sowbella_France`; try{ if(navigator.share){ await navigator.share({text, title:'KSF Snake', url: location.href}); } else { await navigator.clipboard.writeText(text); alert('Score copié ! Colle-le dans ta story Insta 📲'); } }catch(err){} });
     btnPause.addEventListener('click', togglePause);
     btnHow.addEventListener('click', ()=> rulesOverlay.classList.add('active'));
 
